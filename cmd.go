@@ -28,6 +28,7 @@ type Cmd struct {
 	stderr    *output
 	status    Status
 	doneChan  chan Status
+	Dir       string
 }
 
 // Status represents the status of a Cmd. It is valid during the entire lifecycle
@@ -166,7 +167,9 @@ func (c *Cmd) run() {
 	// Setup command
 	// //////////////////////////////////////////////////////////////////////
 	cmd := exec.Command(c.Name, c.Args...)
-
+	if(&c.Dir != nil){
+		cmd.Dir = c.Dir	
+	}
 	// Set process group ID so the cmd and all its children become a new
 	// process grouc. This allows Stop to SIGTERM thei cmd's process group
 	// without killing this process (i.e. this code here).
@@ -276,6 +279,7 @@ func (rw *output) Lines() []string {
 	// Scanners are io.Readers which effectively destroy the buffer by reading
 	// to EOF. So once we scan the buf to lines, the buf is empty again.
 	s := bufio.NewScanner(rw.buf)
+	rw.lines = []string{}
 	for s.Scan() {
 		rw.lines = append(rw.lines, s.Text())
 	}
